@@ -1,10 +1,9 @@
 ﻿using BoilerContollerApplication.Domain;
 
-namespace BoilerContollerApplication.Infrastructure
+namespace BoilerContollerApplication.Infrastructure;
+
+public interface IFileLogger
 {
-    public interface IFileLogger
-    {
-        Task AddEventLog(LogData logData);
-        Task<IEnumerable<LogData>> GetLogger();
-    }
+    Task AddEventLog(LogData logData);
+    Task<IEnumerable<LogData>> GetLogger();
 }
