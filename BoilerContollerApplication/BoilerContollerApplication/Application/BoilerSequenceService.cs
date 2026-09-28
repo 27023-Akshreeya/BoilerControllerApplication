@@ -1,7 +1,11 @@
 ﻿using BoilerContollerApplication.Domain;
 
 namespace BoilerContollerApplication.Application;
-
+/// <summary>
+/// Manages the operational sequence of a boiler system, including startup, shutdown, and error simulation. Provides
+/// events for cycle logging and countdown notifications.
+/// </summary>
+/// <remarks>Handles interlocks via SwitchService and supports cancellation of boiler operations.</remarks>
 public class BoilerSequenceService
 {
     public event EventHandler<LogData>? HandleCycle;
@@ -21,6 +25,10 @@ public class BoilerSequenceService
         source?.Cancel();
     }
 
+    /// <summary>
+    /// Initiates the boiler sequence, transitioning through pre-purge, ignition, and operational phases.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task StartSequence()
     {
         if (!(await _switchService.IsSystemReady()))
@@ -48,6 +56,13 @@ public class BoilerSequenceService
         }
     }
 
+    /// <summary>
+    /// Keeps countdown
+    /// </summary>
+    /// <param name="status">boiler status</param>
+    /// <param name="seconds">the amount of seconds left</param>
+    /// <param name="token">If it had cancelled</param>
+    /// <returns></returns>
     private async Task RunCountdownPhase(string status, int seconds, CancellationToken token)
     {
         for (int i = seconds; i > 0; i--)
@@ -63,6 +78,10 @@ public class BoilerSequenceService
         HandleCycle?.Invoke(this, data);
     }
 
+    /// <summary>
+    /// Stops the boiler sequence, cancels any ongoing operations, and logs the completion status.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous stop operation.</returns>
     public async Task StopSequence()
     {
         if (source != null && !source.IsCancellationRequested)
@@ -73,6 +92,11 @@ public class BoilerSequenceService
         OnCycleEnds(new LogData(DateTime.UtcNow, "Boiler Sequence Completed", "status : Completed"));
     }
 
+    /// <summary>
+    /// Simulates a boiler system error if the current status is operational.
+    /// </summary>
+    /// <returns>true if the error simulation was initiated; otherwise, false.</returns>
+    /// <exception cref="SystemCrashException">Thrown when a boiler system error causes a system crash.</exception>
     public async Task<bool> SimulateError()
     {
         if (!boilerSequence.Status.Equals("Operational"))

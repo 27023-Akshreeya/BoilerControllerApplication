@@ -4,6 +4,9 @@ using BoilerContollerApplication.Domain.Enums;
 
 namespace BoilerContollerApplication.Presentation;
 
+/// <summary>
+/// Handles console operations
+/// </summary>
 public class ConsoleUI
 {
     public event EventHandler<LogData>? EventHandler;
@@ -44,6 +47,9 @@ public class ConsoleUI
         }
     }
 
+    /// <summary>
+    /// Start the application
+    /// </summary>
     public async Task Start()
     {
         Console.WriteLine("Boiler Controller Initialized");
@@ -65,7 +71,7 @@ public class ConsoleUI
         while (!exit)
         {
             DisplayMenu();
-            Console.SetCursorPosition(20, 18);
+            Console.SetCursorPosition(18, 18);
             string choice = Console.ReadLine() ?? string.Empty;
             if (!int.TryParse(choice, out int menuOption))
             {
@@ -129,19 +135,6 @@ public class ConsoleUI
         }
     }
 
-    private async Task ToggleInterLockSwitch()
-    {
-        var switchState = await this._switchService.GetInterLockSwitchState();
-        if (switchState is SwitchState.Close)
-        {
-            await _switchService.InterLockSwitchOperation(SwitchState.Open);
-        }
-        else
-        {
-            await _switchService.InterLockSwitchOperation(SwitchState.Close);
-        }
-    }
-
     private async Task DisplayLog()
     {
         var log = _eventService.GetLogData();
@@ -151,7 +144,7 @@ public class ConsoleUI
         }
     }
 
-    public void Display(object? sender, LogData data)
+    private void Display(object? sender, LogData data)
     {
         int left = Console.CursorLeft;
         int top = Console.CursorTop;
@@ -163,7 +156,7 @@ public class ConsoleUI
         Console.SetCursorPosition(left, top);
     }
 
-    public void DisplayMenu()
+    private void DisplayMenu()
     {
         int left = Console.CursorLeft;
         int top = Console.CursorTop;
