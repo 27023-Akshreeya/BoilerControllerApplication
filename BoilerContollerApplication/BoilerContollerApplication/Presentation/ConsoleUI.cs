@@ -73,6 +73,7 @@ public class ConsoleUI
             DisplayMenu();
             Console.SetCursorPosition(18, 18);
             string choice = Console.ReadLine() ?? string.Empty;
+            Console.SetCursorPosition(0, 22);
             if (!int.TryParse(choice, out int menuOption))
             {
                 Console.WriteLine("Invalid Input!");
@@ -109,6 +110,7 @@ public class ConsoleUI
                     }
                     break;
                 case MenuOperations.ViewLog:
+                    Console.Clear();
                     await DisplayLog();
                     break;
                 case MenuOperations.Exit:
@@ -164,7 +166,7 @@ public class ConsoleUI
         Console.Write(new string(' ', Console.WindowWidth));
         Console.SetCursorPosition(0, 10);
         Console.Write("Boiler Menu\n1. Start Sequence\n2. Stop Sequence\n3. Simulate Error\n" +
-    "4. Toggle Run Interlock Switch\n5. Reset Lockout\n6. View Log\n7.Exit\nEnter your choice: ");
+    "4. Toggle Run Interlock Switch\n5. Reset Lockout\n6. View Log\n7. Exit\nEnter your choice: ");
         Console.Write(new string(' ', Console.WindowWidth));
         Console.SetCursorPosition(left, top);
     }
