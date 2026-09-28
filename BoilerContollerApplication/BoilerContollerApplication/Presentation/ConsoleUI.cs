@@ -1,5 +1,6 @@
 ﻿using BoilerContollerApplication.Application;
 using BoilerContollerApplication.Domain;
+using BoilerContollerApplication.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,21 @@ namespace BoilerContollerApplication.Presentation
                 EventData = "State = Lockout"
 
             });
+            if (await _switchService.GetInterLockSwitchState() == SwitchState.Open)
+            {
+                await _switchService.InterLockSwitchOperation(SwitchState.Close);
+            }
+            if (await _switchService.LockoutReset())
+            {
+                this.Menu();
+            }
+        }
+
+        private void Menu()
+        {
+            Console.WriteLine("Boiler Menu\n1. Start Sequence\n2. Stop Sequence\n3. Simulate Error\n" +
+                "4. Toggle Run Interlock Switch\n5. Reset Lockout\n6. View Log\n7.Exit");
+
         }
 
         public void Display(object? sender, LogData data)
