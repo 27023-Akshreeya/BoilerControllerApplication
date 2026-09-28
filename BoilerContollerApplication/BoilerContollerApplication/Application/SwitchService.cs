@@ -8,6 +8,8 @@ public class SwitchService
     public SwitchState InterLockSwitch { get; set; } = SwitchState.Open;
     public SwitchState ResetSwitch { get; set; } = SwitchState.Open;
     public event EventHandler<LogData>? ToggleSwitchEventHandler;
+    public event Action? InterlockOpened;
+    public string SystemStatus { get; set; } = "Lockout";
 
     public async Task<bool> InterLockSwitchOperation(SwitchState switchState)
     {
@@ -16,28 +18,27 @@ public class SwitchService
             return false;
         }
         InterLockSwitch = switchState;
-        OnToggleSwitchLogger(new LogData 
-        { 
-            TimeStamp = DateTime.UtcNow,
-            Event = $"Interlock Switch toggled to {switchState}",
-            EventData = $"Interlock : {switchState}"
-        });
+        OnToggleSwitchLogger(new LogData(DateTime.UtcNow, $"Interlock Switch toggled to {switchState}", $"Interlock : {switchState}"));
+        if (switchState == SwitchState.Open)
+        {
+            await PutInSystemLockOutState();
+            InterlockOpened?.Invoke();
+        }
         return true;
     }
 
     public async Task<bool> LockoutReset()
     {
+
         ResetSwitch = SwitchState.Close;
-        if (await IsSystemReady())
+        OnToggleSwitchLogger(new LogData(DateTime.UtcNow, $"Boiler Status Changed to Ready", $"Reset : close"));
+        if (InterLockSwitch == SwitchState.Close && ResetSwitch == SwitchState.Close)
         {
-            OnToggleSwitchLogger(new LogData
-            {
-                TimeStamp = DateTime.UtcNow,
-                Event = $"Boiler Status Changed to Ready",
-                EventData = $"Reset : close"
-            });
+            SystemStatus = "Ready";
+            OnToggleSwitchLogger(new LogData(DateTime.UtcNow, "Boiler Status changed to Ready", "SystemStatus: Ready"));
             return true;
         }
+        ResetSwitch = SwitchState.Open;
         return false;
     }
 
@@ -55,6 +56,7 @@ public class SwitchService
     }
     public async Task PutInSystemLockOutState()
     {
+        SystemStatus = "Lockout";
         ResetSwitch = SwitchState.Open;
     }
 

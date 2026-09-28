@@ -2,7 +2,7 @@
 
 public class BoilerSequence
 {
-    public TimeOnly StartTime { get; set; }
-    public TimeOnly EndTime { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
     public string Status { get; set; } = string.Empty;
 }

@@ -53,17 +53,18 @@ public class FileLogger : IFileLogger
         {
             var logs = new List<LogData>();
             var allLogs = File.ReadLinesAsync(_filePath);
+            bool skipHeader = true;
             await foreach (var log in allLogs)
             {
+                if (skipHeader)
+                {
+                    skipHeader = false;
+                    continue;
+                }
                 var data = log.Split(',', 3);
                 if (data.Length == 3)
                 {
-                    logs.Add(new LogData
-                    {
-                        TimeStamp = DateTime.Parse(data[0]),
-                        Event = data[1],
-                        EventData = data[2]
-                    });
+                    logs.Add(new LogData(DateTime.Parse(data[0]),data[1], data[2]));
                 }
             }
             return logs;

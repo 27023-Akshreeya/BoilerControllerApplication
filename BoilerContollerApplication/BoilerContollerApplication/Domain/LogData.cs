@@ -5,4 +5,11 @@ public class LogData
     public DateTime TimeStamp { get; set; }
     public string Event { get; set; } = string.Empty;
     public string EventData { get; set; } = string.Empty;
+
+    public LogData(DateTime timeStamp, string eventRaised, string eventData)
+    {
+        TimeStamp = timeStamp;
+        Event = eventRaised;
+        EventData = eventData;
+    }
 }

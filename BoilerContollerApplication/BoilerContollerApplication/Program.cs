@@ -8,10 +8,11 @@ public class Program
 {
     private static async Task Main(string[] args)
     {
-        var logger = new FileLogger("BoilerLog.csv");
+        var logger = new FileLogger("BoilerLog.txt");
         var switchService = new SwitchService();
         var eventLogger = new EventLogger(logger);
-        var consoleUI = new ConsoleUI(switchService, eventLogger);
+        var boilerSequence = new BoilerSequenceService(switchService);
+        var consoleUI = new ConsoleUI(switchService, eventLogger, boilerSequence);
         await consoleUI.Start();
     }
 }
