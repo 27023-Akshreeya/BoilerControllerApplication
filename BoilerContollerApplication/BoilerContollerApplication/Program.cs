@@ -1,9 +1,17 @@
-﻿namespace BoilerContollerApplication;
+﻿using BoilerContollerApplication.Application;
+using BoilerContollerApplication.Infrastructure;
+using BoilerContollerApplication.Presentation;
 
-internal class Program
+namespace BoilerContollerApplication;
+
+public class Program
 {
-    static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        var logger = new FileLogger("BoilerLog.csv");
+        var switchService = new SwitchService();
+        var eventLogger = new EventLogger(logger);
+        var consoleUI = new ConsoleUI(switchService, eventLogger);
+        await consoleUI.Start();
     }
 }

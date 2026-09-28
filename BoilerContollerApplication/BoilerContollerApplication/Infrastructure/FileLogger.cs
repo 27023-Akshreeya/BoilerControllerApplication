@@ -6,6 +6,7 @@ public class FileLogger : IFileLogger
 {
     private readonly string _filePath;
 
+    private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
     public FileLogger(string filePath)
     {
         _filePath = filePath ?? string.Empty;
@@ -13,8 +14,6 @@ public class FileLogger : IFileLogger
         {
             using (File.Create(_filePath))
             {
-                string header = "TIME STAMP,EVENT,EVENT DATA";
-                File.WriteAllLinesAsync(_filePath, new[] { header });
             }
         }
     }
@@ -26,8 +25,21 @@ public class FileLogger : IFileLogger
     /// <returns></returns>
     public async Task AddEventLog(LogData logData)
     {
-        string newLog = $"{logData.TimeStamp},{logData.Event},{logData.EventData}";
-        await File.AppendAllLinesAsync(_filePath, new string[] { newLog });
+        await _semaphore.WaitAsync();
+        try
+        {
+            if (new FileInfo(_filePath).Length == 0)
+            {
+                string header = "TIME STAMP,EVENT,EVENT DATA";
+                await File.WriteAllLinesAsync(_filePath, new[] { header });
+            }
+            string newLog = $"{logData.TimeStamp},{logData.Event},{logData.EventData}";
+            await File.AppendAllLinesAsync(_filePath, new string[] { newLog });
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     /// <summary>
@@ -36,21 +48,29 @@ public class FileLogger : IFileLogger
     /// <returns></returns>
     public async Task<IEnumerable<LogData>> GetLogger()
     {
-        var logs = new List<LogData>();
-        var allLogs = File.ReadLinesAsync(_filePath);
-        await foreach (var log in allLogs)
+        await _semaphore.WaitAsync();
+        try
         {
-            var data = log.Split(',', 3);
-            if (data.Length == 3)
+            var logs = new List<LogData>();
+            var allLogs = File.ReadLinesAsync(_filePath);
+            await foreach (var log in allLogs)
             {
-                logs.Add(new LogData
+                var data = log.Split(',', 3);
+                if (data.Length == 3)
                 {
-                    TimeStamp = DateTime.Parse(data[0]),
-                    Event = data[1],
-                    EventData = data[2]
-                });
+                    logs.Add(new LogData
+                    {
+                        TimeStamp = DateTime.Parse(data[0]),
+                        Event = data[1],
+                        EventData = data[2]
+                    });
+                }
             }
+            return logs;
         }
-        return logs;
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 }
